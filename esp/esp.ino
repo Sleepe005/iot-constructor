@@ -1,49 +1,64 @@
 #include <WiFi.h>
-#include <unistd.h>
-#include <netdb.h>
-#include <string>
-#include <vector>
-#include <map>
-#include <thread>
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/wait.h>
-#include <signal.h>
 
-char ssid[] = "Sleepe";
-char password[] = "sleepewww";
-int status;
+const char* ssid = "Sleepe";
+const char* password = "sleepewww";
+int port = 8080;
 
-void setup() {
-  Serial.begin(112500);
+WiFiServer server(port);
 
-  // Попытка подключения к WiFi
-  WiFi.begin(ssid, password);
+void connectToWiFi() {
   Serial.print("Подключение к Wi-Fi");
+  WiFi.begin(ssid, password);
 
-  // Визуаолизация подключения
   int attempts = 0;
-  while (WiFi.status() != WL_CONNECTED && attempts < 10) {
-    delay(1000);
+  while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+    delay(500);
     Serial.print(".");
     attempts++;
   }
 
-  // Проверка подключения
   if (WiFi.status() == WL_CONNECTED) {
     Serial.println("\n✅ Wi-Fi подключён!");
+    Serial.print("IP: ");
     Serial.println(WiFi.localIP());
   } else {
     Serial.println("\n❌ Не удалось подключиться к Wi-Fi.");
   }
 }
 
-void loop() {
+void setup() {
+  Serial.begin(115200);
+  connectToWiFi();
 
+  server.begin();
+  Serial.print("Сервер запущен и слушает порт ");
+  Serial.println(port);
+}
+
+void loop() {
+  WiFiClient client = server.available();
+  if (client && client.connected()) {
+    Serial.println("🔌 Клиент подключён");
+
+    String fullMessage = "";  // Будем собирать сюда все данные
+
+    // Пока клиент подключён
+    while (client.connected()) {
+      while (client.available()) {
+        char c = client.read();     // Читаем по одному байту
+        fullMessage += c;
+      }
+      
+      Serial.println("Сообщение от клиента:\n");
+      Serial.println(fullMessage);
+
+      client.println("✅ Сообщение получено");
+      break;
+    }
+
+    client.stop();
+    Serial.println("❌ Клиент отключён");
+  }
+
+  delay(10);
 }

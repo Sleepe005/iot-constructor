@@ -103,13 +103,13 @@ int main(){
     listen(sockfd, 5);
     system("clear");
 
-    char host[NI_MAXHOST], service[NI_MAXSERV];
-    getnameinfo(res->ai_addr, res->ai_addrlen, 
-    host, sizeof host, 
-    service, sizeof service, 
-    NI_NUMERICHOST | NI_NUMERICSERV);
-    printf("IP: %s\n", host);
-    printf("Port: %s\n", service);      
+    // char host[NI_MAXHOST], service[NI_MAXSERV];
+    // getnameinfo(res->ai_addr, res->ai_addrlen, 
+    // host, sizeof host, 
+    // service, sizeof service, 
+    // NI_NUMERICHOST | NI_NUMERICSERV);
+    // printf("IP: %s\n", host);
+    // printf("Port: %s\n", service);      
     // printf("Listen localhost:8082...\n");
 
     while (true)
