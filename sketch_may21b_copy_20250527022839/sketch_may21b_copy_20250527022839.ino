@@ -1,24 +1,22 @@
 #include <WiFi.h>
 #include <string.h>
 
+#define MAX_PAIRS 10
+#define MAX_KEY_LEN 32
+#define MAX_VALUE_LEN 64
 
-// статус работы программы (0 - открыта точка доступа, ожидание ssid и pass; 1 - вещание в сеть о своём присутствии; 2 - ожидание команд)
+// статус работы программы (0 - открыта точка доступа; 1 - ожидание ssid и pass; 2 - вещание в сеть о своём присутствии; 3 - ожидание команд)
 int workStatus = 0;
+
+char ssid[MAX_VALUE_LEN];
+char pass[MAX_VALUE_LEN];
 
 int port = 8080;
 WiFiServer server(port);
 
 void setup() {
   Serial.begin(115200);
-  // WiFi.mode(WIFI_AP);
-  // WiFi.softAP("ESP");
 }
-
-#define MAX_PAIRS 10
-#define MAX_KEY_LEN 32
-#define MAX_VALUE_LEN 64
-
-
 
 void trimQuotes(char* str) {
   size_t len = strlen(str);
@@ -85,40 +83,28 @@ void onAPmode(){
   // Запускаем сервер и слушаем порт 
   server.begin();
   Serial.println("Сервер запущен и слушает порт 8080");
+}
 
-  // Открываем подключение
-  WiFiClient requestClient = server.available();
-  if(requestClient && requestClient.connected()){
-    Serial.println("Новое подключение");
+void connectToWiFi() {
+  Serial.print("Подключение к Wi-Fi");
+  WiFi.begin(ssid, pass);
 
-    String request = "";
-    // Читаем текст запроса
-    while (requestClient.connected()) {
-      while (requestClient.available()) {
-        char c = requestClient.read();     // Читаем по одному байту
-        request += c;
-      }
-
-      break;
-    }
-
-    Serial.println("От клиента пришло:");
-    Serial.println(request);
-
-    // парсим текст запроса
-    KeyValuePair parsed[MAX_PAIRS];
-    int pairCount = 0;
-
-    parseSimpleJson(request.c_str(), parsed, &pairCount);
-    
-    if(strcmp(parsed[0].value, "ping") == 0){
-      Serial.println("Пришёл ping");
-      requestClient.write("ESPpong");
-    }
+  int attempts = 0;
+  while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+    delay(500);
+    Serial.print(".");
+    attempts++;
   }
 
-  requestClient.stop();
-  delay(10);
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\n✅ Wi-Fi подключён!");
+    Serial.print("IP: ");
+    Serial.println(WiFi.localIP());
+    workStatus = 2;
+  } else {
+    Serial.println("\n❌ Не удалось подключиться к Wi-Fi.");
+  }
+
 }
 
 void getRequest(){
@@ -150,6 +136,20 @@ void getRequest(){
     if(strcmp(parsed[0].value, "ping") == 0){
       Serial.println("Пришёл ping");
       requestClient.write("ESPpong");
+    }else if(strcmp(parsed[0].value, "wifi") == 0){
+      strncpy(ssid, parsed[1].value, MAX_VALUE_LEN - 1);
+      ssid[MAX_VALUE_LEN - 1] = '\0';
+
+      strncpy(pass, parsed[2].value, MAX_VALUE_LEN - 1);
+      pass[MAX_VALUE_LEN - 1] = '\0';
+
+      Serial.println("Получены данные для подключения");
+      Serial.println(ssid);
+      Serial.println(pass);
+
+      workStatus = 1;
+    }else{
+      requestClient.write("Good");
     }
   }
 
@@ -164,5 +164,10 @@ void loop() {
     while(workStatus == 0){
       getRequest();
     }
+  }else if(workStatus == 1){
+    WiFi.softAPdisconnect(true);
+    // WiFi.begin(ssid, pass);
+    connectToWiFi();
+    // workStatus = 2;
   }
 }
