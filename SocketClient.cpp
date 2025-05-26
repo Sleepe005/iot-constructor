@@ -94,14 +94,34 @@ int main(){
     // make a socket:
     
     sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    connect(sockfd, res->ai_addr, res->ai_addrlen);
+
+    char *request = "{\"method\":\"pingdffgkjghj\"}";
+
+    send(sockfd, request, strlen(request), 0);
+
+    // Приём ответа
+    char buffer[2048];
+    int bytesReceived = recv(sockfd, buffer, sizeof(buffer) - 1, 0);
+
+    if (bytesReceived > 0) {
+        buffer[bytesReceived] = '\0'; // Завершаем строку
+        printf("Ответ от сервера: %s\n", buffer);
+    } else {
+        printf("Нет ответа или ошибка");
+    }
+
+    // Освобождение ресурсов
+    freeaddrinfo(res);
+    close(sockfd);
     
     // bind it to the port we passed in to getaddrinfo():
     
-    bind(sockfd, res->ai_addr, res->ai_addrlen);
+    // bind(sockfd, res->ai_addr, res->ai_addrlen);
 
-    // listening to the assigned socket
-    listen(sockfd, 5);
-    system("clear");
+    // // listening to the assigned socket
+    // listen(sockfd, 5);
+    // system("clear");
 
     // char host[NI_MAXHOST], service[NI_MAXSERV];
     // getnameinfo(res->ai_addr, res->ai_addrlen, 
@@ -112,26 +132,26 @@ int main(){
     // printf("Port: %s\n", service);      
     // printf("Listen localhost:8082...\n");
 
-    while (true)
-    {
-        // accepting connection request
-        int clientSocket
-            = accept(sockfd, nullptr, nullptr);
+    // while (true)
+    // {
+    //     // accepting connection request
+    //     int clientSocket
+    //         = accept(sockfd, nullptr, nullptr);
 
-        // recieving data
-        char buffer[2048] = { 0 };
-        recv(clientSocket, buffer, sizeof(buffer), 0);
+    //     // recieving data
+    //     char buffer[2048] = { 0 };
+    //     recv(clientSocket, buffer, sizeof(buffer), 0);
 
-        std::string s(buffer);
-        initializationRequest(s);
+    //     std::string s(buffer);
+    //     initializationRequest(s);
 
-        // printf("Message from client:\n%s", buffer);
+    //     // printf("Message from client:\n%s", buffer);
 
-        send(clientSocket, "Accept\n", 7, 0);
-    }
+    //     send(clientSocket, "Accept\n", 7, 0);
+    // }
 
-    // closing the socket.
-    close(sockfd);
+    // // closing the socket.
+    // close(sockfd);
 
     return 0;
 }
