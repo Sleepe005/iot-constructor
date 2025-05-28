@@ -34,20 +34,51 @@
     
 // }
 
+struct protocolRequest{
+    uint8_t startByte = 0xAA;
+    uint8_t requestType;
+    uint8_t payloadType;
+    uint16_t payloadSize;
+    uint8_t *payload;
+    //TODO: uint8_t controlSum 
+};
+
 // object to bytes
 void serializerData(singleList<uint8_t> *&data, uint8_t *bytes_data){
     singleList<uint8_t> *buffer = data;
-    while(data->next != NULL){
-        *bytes_data++ = data->data;
-        data = data->next;
+    while(buffer->next != NULL){
+        *bytes_data++ = buffer->data;
+        buffer = buffer->next;
     }
-    *bytes_data++ = data->data;
+    *bytes_data++ = buffer->data;
     *bytes_data = 0x00;
+}
+
+void serializerData(protocolRequest &request, uint8_t *bytes_request){
+    *bytes_request++ = request.startByte;
+    *bytes_request++ = request.requestType;
+    *bytes_request++ = request.payloadType;
+    *bytes_request++ = request.payloadSize & 0xFF;
+    *bytes_request++ = (request.payloadSize >> 8) & 0xFF;
+    for(size_t i = 0; i < request.payloadSize; i++){
+        *bytes_request++ = request.payload[i];
+    }
 }
 
 void deserializerData(uint8_t *bytes_data, singleList<uint8_t> *&data){
     for(size_t i = 0; bytes_data[i] != 0x00; i++){
         pushBack(data, bytes_data[i]);
+    }
+}
+
+void deserializerData(uint8_t *bytes_request, protocolRequest &request){
+    request.startByte = bytes_request[0];
+    request.requestType = bytes_request[1];
+    request.payloadType = bytes_request[2];
+    request.payloadSize = (uint16_t)bytes_request[3] | ((uint16_t)bytes_request[4] << 8);
+    request.payload = new uint8_t[request.payloadSize];
+    for(size_t i = 0; i < request.payloadSize; i++){
+        request.payload[i] = bytes_request[5+i];
     }
 }
 
@@ -68,10 +99,10 @@ void createRequest(uint8_t request_type, uint8_t payload_type, singleList<uint8_
 
 // int main(){
 //     singleList<uint8_t> *list = nullptr;
-//     pushBack(list, (uint8_t)0xAA);
-//     pushBack(list, (uint8_t)0x01);
-//     pushBack(list, (uint8_t)0x01);
-//     pushBack(list, (uint8_t)0x00);
+//     pushBack(list, (uint8_t)0xAB);
+//     pushBack(list, (uint8_t)0xAC);
+//     pushBack(list, (uint8_t)0xAD);
+//     pushBack(list, (uint8_t)0xAE);
 
 //     // uint8_t bytes_data[2048] = {0};
 
@@ -90,7 +121,15 @@ void createRequest(uint8_t request_type, uint8_t payload_type, singleList<uint8_
 //     singleList<uint8_t> *request = nullptr;
 //     createRequest((uint8_t)0x01, (uint8_t)0x01, list, request);
 
+//     uint8_t b[2048] = {0};
+//     serializerData(request, b);
+
+//     protocolRequest pt;
+//     deserializerData(b, pt);
+
+//     uint8_t bt[2048] = {0};
+//     serializerData(pt, bt);
+
 //     deleteList(list);
 //     deleteList(request);
-//     // deleteList(dlist);
 // }
