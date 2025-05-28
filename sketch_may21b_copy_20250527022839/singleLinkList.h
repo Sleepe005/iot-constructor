@@ -1,6 +1,4 @@
 #pragma once
-#include <stdio.h>
-#include <iostream>
 
 template <typename T>
 struct singleList {
@@ -24,20 +22,20 @@ int lengthList(singleList<T> *&head){
     return ++len;
 }
 
-template <typename T>
-void printList(singleList<T> *&head){
-    if(head == NULL){
-        printf("List in NULL\n");
-        return;
-    }
+// template <typename T>
+// void printList(singleList<T> *&head){
+//     if(head == NULL){
+//         printf("List in NULL\n");
+//         return;
+//     }
 
-    singleList<T> *bufIt = head;
-    while(bufIt->next != NULL){
-        std::cout << " " << bufIt->data << " ";
-        bufIt = bufIt->next;
-    }
-    std::cout << " " << bufIt->data << std::endl;
-}
+//     singleList<T> *bufIt = head;
+//     while(bufIt->next != NULL){
+//         std::cout << " " << bufIt->data << " ";
+//         bufIt = bufIt->next;
+//     }
+//     std::cout << " " << bufIt->data << std::endl;
+// }
 
 template <typename T>
 void deleteList(singleList<T> *&head){

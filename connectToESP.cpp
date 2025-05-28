@@ -15,6 +15,8 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <ncurses.h>
+#include "protocol.h"
+#include "singleLinkList.h"
 
 int getSocket(struct addrinfo *res){
     int sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
@@ -47,9 +49,20 @@ bool sendToESP(struct addrinfo *res, char *request, char *response){
 }
 
 bool findESP(struct addrinfo *res){
-    char request[] = "{\"method\":\"ping\"}";
+    singleList<uint8_t> *payload = NULL;
+    deserializerData((uint8_t*)"ping", payload);
+
+    singleList<uint8_t> *request = NULL;
+    createRequest((uint8_t)0x01, (uint8_t)0x01, payload, request);
+
+    uint8_t request_str[2048] = {0};
+    serializerData(request, request_str);
+
     char response[2048] = {0};
-    return sendToESP(res, request, response);
+    return sendToESP(res, (char*)request_str, response);
+
+    deleteList(payload);
+    deleteList(request);
 }
 
 bool sendSettingsESP(){
@@ -70,6 +83,7 @@ bool sendSettingsESP(){
         return false;
     }
 
+    
     char request[] = "{\"method\":\"wifi\",\"ssid\":\"Sleepe\",\"pass\":\"sleepewww\"}";
     char response[2048] = {0};
     sendToESP(res, request, response);

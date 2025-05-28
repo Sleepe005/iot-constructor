@@ -1,5 +1,7 @@
 #include <WiFi.h>
 #include <string.h>
+#include "protocol.h"
+#include "singleLinkList.h"
 
 #define MAX_PAIRS 10
 #define MAX_KEY_LEN 32
