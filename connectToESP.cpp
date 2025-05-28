@@ -49,20 +49,21 @@ bool sendToESP(struct addrinfo *res, char *request, char *response){
 }
 
 bool findESP(struct addrinfo *res){
-    singleList<uint8_t> *payload = NULL;
-    deserializerData((uint8_t*)"ping", payload);
+    
+    // singleList<uint8_t> *payload = NULL;
+    // deserializerData((uint8_t*)"ping", payload);
 
-    singleList<uint8_t> *request = NULL;
-    createRequest((uint8_t)0x01, (uint8_t)0x01, payload, request);
+    // singleList<uint8_t> *request = NULL;
+    // createRequest((uint8_t)0x01, (uint8_t)0x01, payload, request);
 
-    uint8_t request_str[2048] = {0};
-    serializerData(request, request_str);
+    // uint8_t request_str[2048] = {0};
+    // serializerData(request, request_str);
 
-    char response[2048] = {0};
-    return sendToESP(res, (char*)request_str, response);
+    // char response[2048] = {0};
+    // return sendToESP(res, (char*)request_str, response);
 
-    deleteList(payload);
-    deleteList(request);
+    // deleteList(payload);
+    // deleteList(request);
 }
 
 bool sendSettingsESP(){

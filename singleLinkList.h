@@ -8,6 +8,8 @@ struct singleList {
     singleList<T> *next;
 };
 
+
+
 template <typename T>
 int lengthList(singleList<T> *&head){
     if(head == NULL){return 0;}
@@ -76,6 +78,13 @@ void pushBackList(singleList<T> *&head, singleList<T> *&insertListItem){
         bufIt = bufIt->next;
     }
     pushBack(head, bufIt->data);
+}
+
+template <typename T>
+void pushBackArray(singleList<T> *&head, T *insertArray, size_t n){
+    for(size_t i = 0; i < n; i++){
+        pushBack(head, insertArray[i]);
+    }
 }
 
 template <typename T>
@@ -160,4 +169,16 @@ void deleteItem(singleList<T> *&head, int index){
         bufIt->next = bufIt->next->next;
         delete bufnext;
     }
+}
+
+template <typename T>
+T getItemData(singleList<T> *&head, int index){
+    if(index > lengthList(head) || index < 0){return -1;}
+
+    singleList<T> *buf = head;
+    for(size_t i = 0; i < index; i++){
+        buf = buf->next;
+    }
+
+    return buf->data;
 }
